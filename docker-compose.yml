@@ -17,7 +17,7 @@ services:
     build:
       context: .
     ports:
-      - "8010:8020"
+      - "8000:8020"
     command: >
       sh -c ". /tmp/app/start-app.sh"
     environment:
