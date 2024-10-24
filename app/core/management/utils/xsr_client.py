@@ -14,15 +14,14 @@ def read_source_file():
     """setting file path from s3 bucket"""
     xsr_data = XSRConfiguration.objects.first()
     file_name = xsr_data.source_file
-    extracted_data1 = pd.read_excel(file_name,
-                                    sheet_name="All Enterprise Courses",
-                                    engine='openpyxl', skiprows=range(1, 3),
-                                    header=1)
-    extracted_data2 = pd.read_excel(file_name,
-                                    sheet_name="Projects", engine='openpyxl',
-                                    skiprows=range(1, 3), header=1)
-    extracted_data = pd.concat([extracted_data1, extracted_data2],
-                               ignore_index=True)
+    extracted_data = pd.read_excel(file_name,
+                                    sheet_name="6 AI",
+                                    engine='openpyxl')
+    # extracted_data2 = pd.read_excel(file_name,
+    #                                 sheet_name="Projects", engine='openpyxl',
+    #                                 skiprows=range(1, 3), header=1)
+    # extracted_data = pd.concat([extracted_data1, extracted_data2],
+    #                            ignore_index=True)
 
     std_source_df = extracted_data.where(pd.notnull(extracted_data),
                                          None)
@@ -38,18 +37,20 @@ def read_source_file():
 def get_source_metadata_key_value(data_dict):
     """Function to create key value for source metadata """
     # field names depend on source data and SOURCESYSTEM is system generated
-    field = ['Course ID', 'SOURCESYSTEM']
-    field_values = []
+    # field = ['Course Provider', 'Course ID']
+    # field_values = []
 
-    for item in field:
-        if not data_dict.get(item):
-            logger.info('Field name ' + item + ' is missing for '
-                                               'key creation')
-            return None
-        field_values.append(data_dict.get(item))
+    # for item in field:
+    #     if not data_dict.get(item):
+    #         logger.info('Field name ' + item + ' is missing for '
+    #                                            'key creation')
+    #         return None
+    #     field_values.append(data_dict.get(item))
 
     # Key value creation for source metadata
-    key_value = '_'.join(field_values)
+    # key_value = '_'.join(field_values)
+
+    key_value = data_dict['Course Provider'].replace(' ','_') + '-' + str(data_dict['Course ID']).replace(' ','_') + '-DOTE-000'
 
     # Key value hash creation for source metadata
     key_value_hash = hashlib.sha512(key_value.encode('utf-8')).hexdigest()
