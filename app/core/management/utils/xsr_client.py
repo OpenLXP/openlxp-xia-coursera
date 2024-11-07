@@ -27,6 +27,12 @@ def read_source_file():
     std_source_df = extracted_data.where(pd.notnull(extracted_data),
                                          None)
     source_nan_df = std_source_df.replace(np.nan, None)
+
+    # Strip leading or trailing whitespace for every string element
+    for i in source_nan_df.columns:
+        if source_nan_df[i].dtype == 'object':
+            source_nan_df[i] = source_nan_df[i].map(str.strip)
+
     #  Creating list of dataframes of sources
     source_list = [source_nan_df]
 
