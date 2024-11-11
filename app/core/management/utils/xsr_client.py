@@ -30,7 +30,12 @@ def read_source_file():
     # Strip leading or trailing whitespace for every string element
     for i in source_nan_df.columns:
         if source_nan_df[i].dtype == 'object':
-            source_nan_df[i] = source_nan_df[i].map(str.strip)
+            check = True
+            for x in source_nan_df[i]:
+                if not isinstance(x, str):
+                    check = False
+            if check:
+                source_nan_df[i] = source_nan_df[i].map(str.strip)
 
     #  Creating list of dataframes of sources
     source_list = [source_nan_df]
