@@ -11,16 +11,18 @@ class TestSetUp(TestCase):
         # globally accessible data sets
 
         self.source_metadata = {
-            "Test": "0",
-            "Test_id": "2146",
-            "Test_url": "https://example.test.com/",
-            "End_date": "9999-12-31T00:00:00-05:00",
-            "test_name": "test name",
-            "Start_date": "2017-03-28T00:00:00-04:00",
-            "LearningResourceIdentifier": "TestData 123",
-            "SOURCESYSTEM": "coursera",
-            "test_description": "test description",
-            "supplemental_data": "sample1"
+            "1": {
+                "Test": "0",
+                "Test_id": "2146",
+                "Test_url": "https://example.test.com/",
+                "End_date": "9999-12-31T00:00:00-05:00",
+                "test_name": "test name",
+                "Start_date": "2017-03-28T00:00:00-04:00",
+                "LearningResourceIdentifier": "TestData 123",
+                "SOURCESYSTEM": "coursera",
+                "test_description": "test description",
+                "supplemental_data": "sample1"
+            }
         }
 
         self.key_value = "TestData 123_coursera"

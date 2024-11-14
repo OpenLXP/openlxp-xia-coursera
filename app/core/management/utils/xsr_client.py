@@ -28,7 +28,7 @@ def read_source_file():
                                          None)
     source_nan_df = std_source_df.replace(np.nan, None)
 
-    # Strip leading or trialing whitespcae for every column 
+    # Strip leading or trialing whitespcae for every column
     source_nan_df.columns = source_nan_df.columns.map(str.strip)
 
     # Strip leading or trailing whitespace for every string element
@@ -40,7 +40,7 @@ def read_source_file():
                     check = False
             if check:
                 source_nan_df[i] = source_nan_df[i].map(str.strip)
-                
+
     #  Creating list of dataframes of sources
     source_list = [source_nan_df]
 
