@@ -1,0 +1,30 @@
+[DESIGN]
+
+[TYPECHECK]
+
+[MASTER]
+DJANGO_SETTINGS_MODULE=openlxp_xia_coursera_project.settings
+
+ignore-paths=^.\/app/core/migrations\/.*$,
+             ^.*\.cache\/*\/.*$
+
+disable=deprecated-method,
+        inconsistent-return-statements,
+        import-error,
+        import-outside-toplevel,
+        invalid-name,
+        line-too-long,
+        missing-module-docstring,
+        missing-class-docstring,
+        missing-function-docstring,
+        no-member,
+        super-with-arguments,
+        too-few-public-methods,
+        too-many-instance-attributes,
+        unused-argument,
+        useless-super-delegation
+
+[MESSAGES CONTROL]
+
+[FORMAT]
+max-line-length=100
