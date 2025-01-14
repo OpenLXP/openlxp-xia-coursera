@@ -20,9 +20,6 @@ ENV PATH $PATH:/tmp/app/.cache/python-packages/bin
 COPY ./app /tmp/app/openlxp-xia-coursera/
 WORKDIR /tmp/app/openlxp-xia-coursera/
 
-RUN freshclam
-RUN service clamav-daemon start
-
 # start server
 EXPOSE 8020
 STOPSIGNAL SIGTERM
