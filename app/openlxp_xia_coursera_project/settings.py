@@ -98,10 +98,12 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PORT': 3306,
         'OPTIONS': {
-                    'charset': 'utf8mb4',
-                }
-            },
+            'ssl_disabled': True,
+            'sql_mode': 'STRICT_TRANS_TABLES'
+            }
+    }
 }
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 REST_FRAMEWORK = {
