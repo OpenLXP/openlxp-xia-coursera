@@ -16,7 +16,7 @@ ddt~=1.4.2 , <1.5.0
 
 django-admin-interface>=0.28.3
 
-django-celery-beat >=2.2.1, <2.3.0
+django-celery-beat >=2.5.0, <2.6.0
 
 django-celery-results~=2.4.0
 
