@@ -1,7 +1,7 @@
 import logging
 
 from celery import shared_task
-from openlxp_notifications.management.commands.trigger_status_update import \
+from openlxp_P1_notification.management.commands.trigger_status_update import \
     Command as conformance_alerts_Command
 from openlxp_xia.management.commands.load_supplemental_metadata import \
     Command as load_supplemental_Command

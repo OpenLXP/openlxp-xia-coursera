@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'core',
     'openlxp_xia',
-    'openlxp_notifications',
-    # 'openlxp_P1_notification',
+    'openlxp_P1_notification',
     'django_celery_beat',
     'django_celery_results',
     'health_check',
@@ -55,7 +54,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'openlxp_P1_notification.middleware.TemplateMiddleware',
+    'openlxp_P1_notification.middleware.TemplateMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
