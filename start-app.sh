@@ -16,9 +16,9 @@ cp -ur ./static/ /tmp/shared/
 cp -ur ./media/ /tmp/shared/
 cd /tmp/app/ 
 if [ -n "$TMP_SOURCE_DIR" ] ; then 
-    (cd openlxp-xia-coursera; install -d -o www-data -p $TMP_SOURCE_DIR) 
+    (cd openlxp-xia-coursera; install -d -o python -p $TMP_SOURCE_DIR) 
 else 
-    (cd openlxp-xia-coursera; install -d -o www-data -p tmp/source) 
+    (cd openlxp-xia-coursera; install -d -o python -p tmp/source) 
 fi 
 pwd 
 service clamav-daemon restart 
