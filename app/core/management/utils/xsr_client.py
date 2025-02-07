@@ -12,6 +12,7 @@ logger = logging.getLogger('dict_config_logger')
 
 def read_source_file():
     """setting file path from s3 bucket"""
+    # TODO: Change this to accept API from coursera 
     xsr_data = XSRConfiguration.objects.first()
     file_name = xsr_data.source_file
     extracted_data1 = pd.read_excel(file_name,
