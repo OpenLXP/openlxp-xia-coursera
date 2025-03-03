@@ -4,56 +4,112 @@ import logging
 import numpy as np
 import pandas as pd
 from openlxp_xia.management.utils.xia_internal import get_key_dict
+import requests
+from requests.auth import HTTPBasicAuth
+import json
 
 from core.models import XSRConfiguration
 
 logger = logging.getLogger('dict_config_logger')
 
 
-def read_source_file():
-    """setting file path from s3 bucket"""
-    # TODO: Change this to accept API from coursera 
+def get_course_api_url():
+    """"Retrieve course url api from XIS configuration"""
+    logger.debug("Retrieve course url api from XIS configuration")
     xsr_data = XSRConfiguration.objects.first()
-    file_name = xsr_data.source_file
-    extracted_data1 = pd.read_excel(file_name,
-                                    sheet_name="All Enterprise Courses",
-                                    engine='openpyxl', skiprows=range(1, 3),
-                                    header=1)
-    extracted_data2 = pd.read_excel(file_name,
-                                    sheet_name="Projects", engine='openpyxl',
-                                    skiprows=range(1, 3), header=1)
-    extracted_data = pd.concat([extracted_data1, extracted_data2],
-                               ignore_index=True)
+    url = xsr_data.courses_url
+    org_id = xsr_data.xsr_api_org_id
+    final_url = url.format(orgId=org_id)
+    return final_url
 
-    std_source_df = extracted_data.where(pd.notnull(extracted_data),
-                                         None)
-    source_nan_df = std_source_df.replace(np.nan, None)
 
-    # Strip leading or trialing whitespcae for every column
-    source_nan_df.columns = source_nan_df.columns.map(str.strip)
+def token_generation_for_api_endpoint():
+    """Function that connects to Coursera api using an api key and
+    secret to generates an access token, returns token"""
+    xsr_data = XSRConfiguration.objects.first()
 
-    # Strip leading or trailing whitespace for every string element
-    for i in source_nan_df.columns:
-        if source_nan_df[i].dtype == 'object':
-            check = True
-            for x in source_nan_df[i]:
-                if not isinstance(x, str):
-                    check = False
-            if check:
-                source_nan_df[i] = source_nan_df[i].map(str.strip)
+    headers = {"content-type": "application/x-www-form-urlencoded"}
+    payload = {"grant_type": "client_credentials"}
+    basic = HTTPBasicAuth(xsr_data.xsr_api_pk, xsr_data.xsr_api_sk)
+    xis_response = requests.post(url=xsr_data.token_url,
+                                 headers=headers, data=payload,
+                                 auth=basic, verify=False)
+    data = xis_response.json()
+    return data['access_token']
+
+
+def extract_source():
+    token = token_generation_for_api_endpoint()
+    url = get_course_api_url()
+
+    header = {'Authorization': 'Bearer ' + token}
+    data = {'start': '0', 'limit': '1000'}
+    response = requests.get(url=url,
+                            headers=header,
+                            params=data,
+                            verify=False)
+
+    source_data_dict = json.loads(response.text)
+
+    source_df_list = []
+
+    while True:
+        source_df = pd.DataFrame(source_data_dict['elements'])
+        source_df = source_df.replace({np.nan: None})
+        source_df_list.append(source_df)
+        if 'next' not in source_data_dict['paging']:
+            source_df_final = pd.concat(source_df_list).reset_index(drop=True)
+
+            # Extracting only the instructor names from the data
+            instructor_names = []
+            for list in source_df_final['instructors']:
+                names = []
+                for item in list:
+                    names.append(item['name'])
+                instructor_names.append(names)
+            # Re-assigning instructor column to only contain their names
+            source_df_final['instructors'] = instructor_names
+
+            # Extracting one URL from programs
+            urls = []
+            for row in source_df_final['programs']:
+                url = row[0]['contentUrl']
+                urls.append(url)
+            # Re-assigning programs to only include a single URL
+            source_df_final['programs'] = urls
+
+            logger.info("Completed retrieving data from source")
+            return source_df_final
+        else:
+            logger.info("Retrieving data starting from index "
+                        + source_data_dict['paging']['next'])
+            data = {'start': source_data_dict['paging']['next'],
+                    'limit': '1000'}
+            resp = requests.get(url=url,
+                                headers=header,
+                                params=data,
+                                verify=False)
+            source_data_dict = json.loads(resp.text)
+
+
+def read_source_file():
+
+    logger.info("Retrieving data from XSR")
+
+    # Function call to extract data from source repository
+    source_df = extract_source()
 
     #  Creating list of dataframes of sources
-    source_list = [source_nan_df]
+    source_list = [source_df]
 
     logger.debug("Sending source data in dataframe format for EVTVL")
-    # file_name.delete()
     return source_list
 
 
 def get_source_metadata_key_value(data_dict):
     """Function to create key value for source metadata """
     # field names depend on source data and SOURCESYSTEM is system generated
-    field = ['Course ID', 'SOURCESYSTEM']
+    field = ['id', 'SOURCESYSTEM']
     field_values = []
 
     for item in field:

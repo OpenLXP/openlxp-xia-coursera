@@ -2,7 +2,7 @@ import hashlib
 import json
 import logging
 
-import pandas as pd
+import numpy as np
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from openlxp_xia.management.utils.xia_internal import (
@@ -26,8 +26,7 @@ def get_source_metadata():
         logger.info('Loading metadata to be extracted from source')
 
         # Changing null values to None for source dataframe
-        std_source_df = source_item.where(pd.notnull(source_item),
-                                          None)
+        std_source_df = source_item.replace(np.nan, None)
         if std_source_df.empty:
             logger.error("Source metadata is empty!")
         extract_metadata_using_key(std_source_df)

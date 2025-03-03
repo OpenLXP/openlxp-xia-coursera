@@ -39,6 +39,12 @@ class TestSetUp(TestCase):
             "key1": ["val1"],
             "key2": ["val2"],
             "key3": ["val3"]}
+
+        self.test_courses_url = \
+            'https://api.coursera.com/ent/api/businesses.v1/123/contents'
+
+        self.orgId = '123'
+
         self.metadata_df = pd.DataFrame.from_dict({1: self.source_metadata},
                                                   orient='index')
 

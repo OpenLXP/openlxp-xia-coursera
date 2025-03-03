@@ -100,7 +100,15 @@ To run this project, you will need to add the following environment variables to
 
 2. `Add xsr configuration`: Configure Experience Source Repository (XSR):
     
-    `source_file`: Upload the Excel source metadata file of coursera here. 
+    `token_url`: enter the Coursera API endpoint where a token can be generated for other API calls. (i.e. https://api.coursera.com/oauth2/client_credentials/token)
+
+    `xsr_api_pk`: enter the primary key for the Coursera App or Service Account you are using for authentication. (i.e. ZIsNnKqPShooBteUyccRrimowggdG4QovQzARCUhNzGvsK4x)
+
+    `xsr_api_sk`: enter teh secret key associated with the primary key for the Coursera app or Service Account you are using for authentication
+
+    `xsr_api_org_id`: enter the Coursera Organization ID for the Org you are attempting to pull course data from. (i.e. BbOfhHUrRBes5ZUwKBL-Cg)
+
+    `courses_url`: enter the Coursera API endpoint where a user can retrieve course data given an authorization token and Org ID (i.e. https://api.coursera.com/ent/api/businesses.v1/{orgId}/contents)
 
 
 #### Note : Validation, transformation & loading are executed by the openlxp-xia package which is imported. The celery task calls the commands from the package and executes it.
