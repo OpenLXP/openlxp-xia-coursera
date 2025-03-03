@@ -7,13 +7,10 @@ from ddt import data, ddt, unpack
 from django.test import tag
 
 from core.management.utils.xsr_client import (
-                                        get_source_metadata_key_value,
-                                        read_source_file,
-                                        get_course_api_url,
-                                        token_generation_for_api_endpoint,
-                                        extract_source)
-
+    extract_source, get_course_api_url, get_source_metadata_key_value,
+    read_source_file, token_generation_for_api_endpoint)
 from core.models import XSRConfiguration
+
 from .test_setup import TestSetUp
 
 logger = logging.getLogger('dict_config_logger')

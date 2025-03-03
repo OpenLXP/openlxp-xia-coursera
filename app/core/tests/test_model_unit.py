@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
+
 from core.models import XSRConfiguration
 
 

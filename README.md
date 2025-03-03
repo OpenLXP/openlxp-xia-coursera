@@ -104,7 +104,7 @@ To run this project, you will need to add the following environment variables to
 
     `xsr_api_pk`: enter the primary key for the Coursera App or Service Account you are using for authentication.
 
-    `xsr_api_sk`: enter teh secret key associated with the primary key for the Coursera app or Service Account you are using for authentication
+    `xsr_api_sk`: enter the secret key associated with the primary key for the Coursera app or Service Account you are using for authentication.
 
     `xsr_api_org_id`: enter the Coursera Organization ID for the Org you are attempting to pull course data from.
 

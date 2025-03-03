@@ -1,12 +1,12 @@
 import hashlib
+import json
 import logging
 
 import numpy as np
 import pandas as pd
-from openlxp_xia.management.utils.xia_internal import get_key_dict
 import requests
+from openlxp_xia.management.utils.xia_internal import get_key_dict
 from requests.auth import HTTPBasicAuth
-import json
 
 from core.models import XSRConfiguration
 
