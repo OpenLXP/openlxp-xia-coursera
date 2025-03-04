@@ -3,7 +3,7 @@
 FROM python:3.9-buster
 
 # install nginx
-RUN apt-get update && apt-get install nginx vim libxml2-dev libxmlsec1-dev clamav-daemon clamav-freshclam clamav-unofficial-sigs -y --no-install-recommends
+RUN apt-get update && apt-get install nginx vim libxml2-dev libxmlsec1-dev -y --no-install-recommends
 COPY nginx.default /etc/nginx/sites-available/default
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
@@ -23,8 +23,6 @@ WORKDIR /tmp/app
 RUN pip install -r requirements.txt --cache-dir /tmp/app/pip_cache
 RUN chown -R www-data:www-data /tmp/app
 WORKDIR /tmp/app/openlxp-xia-coursera/
-RUN freshclam
-RUN service clamav-daemon start
 
 # start server
 EXPOSE 8020
