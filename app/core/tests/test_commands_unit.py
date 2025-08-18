@@ -50,7 +50,7 @@ class CommandTests(TestSetUp):
             xiaConfig = XIAConfiguration(publisher='coursera')
             xisCfg.first.return_value = xiaConfig
             test_df = pd.DataFrame.from_dict(self.test_data)
-            result = add_publisher_to_source(test_df)
+            result = add_publisher_to_source(xiaConfig, test_df)
             key_exist = 'SOURCESYSTEM' in result.columns
             self.assertTrue(key_exist)
 
@@ -59,6 +59,7 @@ class CommandTests(TestSetUp):
 
         data = {1: self.source_metadata}
         data_df = pd.DataFrame.from_dict(data, orient='index')
+        xiaConfig = XIAConfiguration(publisher='coursera')
         with patch(
                 'core.management.commands.extract_source_metadata'
                 '.add_publisher_to_source',
@@ -76,7 +77,8 @@ class CommandTests(TestSetUp):
             mock_get_source.filter.side_effect = [
                 mock_get_source, mock_get_source]
 
-            extract_metadata_using_key(data_df)
+            extract_metadata_using_key(self.xsr_config_obj,
+                                       xiaConfig, data_df)
             self.assertEqual(mock_get_source.call_count, 1)
             self.assertEqual(mock_store_source.call_count, 1)
 
@@ -88,8 +90,10 @@ class CommandTests(TestSetUp):
                 patch('core.management.commands.extract_source_metadata.'
                       'read_source_file') as mock_extract_metadata_using_key:
             d = {'col1': [0, 1, 2, 3], 'col2': pd.Series([2, 3], index=[2, 3])}
+            xiaConfig = XIAConfiguration(publisher='coursera')
+
             df = pd.DataFrame(data=d, index=[0, 1, 2, 3])
             mock_read_source_file.return_value = mock_read_source_file
             mock_read_source_file.return_value = [df]
-            get_source_metadata()
+            get_source_metadata(xiaConfig, xiaConfig)
             self.assertEqual(mock_extract_metadata_using_key.call_count, 1)
