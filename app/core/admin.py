@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import (XSRConfiguration,
                      ConfigurationManager)
 
-
 # Register your models here.
 
 
@@ -14,6 +13,7 @@ class XSRConfigurationAdmin(admin.ModelAdmin):
     fields = ['token_url', 'xsr_api_pk', 'xsr_api_sk',
               'xsr_api_org_id', 'courses_url', 'key_fields',
               'data_type']
+
 
 @admin.register(ConfigurationManager)
 class ConfigurationManagerAdmin(admin.ModelAdmin):

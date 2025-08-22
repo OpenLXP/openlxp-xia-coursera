@@ -100,7 +100,8 @@ class UtilsTests(TestSetUp):
         with patch('core.management.utils.xsr_client.requests') as mock_resp:
 
             val = '{"elements": [{"course": "test", "instructors": [],'\
-                  '"programs": [{"contentUrl": "test"}]}],"paging": []}'
+                  '"programs": [{"contentUrl": "test"}]}],' \
+                  '"paging": {"next":[]}}'
 
             mock_resp.get.return_value.text = val
             self.assertIsInstance(extract_source(

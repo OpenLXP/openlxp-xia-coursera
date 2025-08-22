@@ -1,7 +1,6 @@
 import logging
 
 from celery import shared_task
-from core.models import ConfigurationManager
 # from openlxp_notifications.management.commands.trigger_status_update import \
 #     Command as conformance_alerts_Command
 from openlxp_xia.management.commands.load_supplemental_metadata import \
@@ -15,6 +14,9 @@ from openlxp_xia.management.commands.validate_source_metadata import \
 from openlxp_xia.management.commands.validate_target_metadata import \
     Command as validate_target_Command
 
+from core.management.commands.extract_source_metadata import \
+    Command as extract_Command
+from core.models import ConfigurationManager
 
 logger = logging.getLogger('dict_config_logger')
 

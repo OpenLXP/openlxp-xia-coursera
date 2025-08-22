@@ -150,7 +150,8 @@ def extract_source(xsr_config=None):
         source_df = source_df.replace({np.nan: None})
         source_df_list.append(source_df)
         # if 'next' not in source_data_dict['paging']:
-        #     source_df_final = pd.concat(source_df_list).reset_index(drop=True)
+        #     source_df_final = pd.concat(source_df_list).
+        # reset_index(drop=True)
 
         #     if xsr_config.data_type == "course":
         #         source_df_final = coursera_courses_metadata_update(
@@ -163,7 +164,7 @@ def extract_source(xsr_config=None):
         #     return source_df_final
         # else:
         logger.info("Retrieving data starting from index "
-                    + source_data_dict['paging']['next'])
+                    + str(source_data_dict['paging']['next']))
         data = {'start': source_data_dict['paging']['next'],
                 'limit': '1000'}
         resp = requests.get(url=url,
