@@ -2,7 +2,8 @@ import hashlib
 import json
 import logging
 
-import pandas as pd
+from core.models import ConfigurationManager
+import numpy as np
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from openlxp_xia.management.utils.xia_internal import (
@@ -15,29 +16,29 @@ from core.management.utils.xsr_client import (get_source_metadata_key_value,
 logger = logging.getLogger('dict_config_logger')
 
 
-def get_source_metadata():
+def get_source_metadata(xsr_config, xia_config):
     """Retrieving source metadata"""
 
     #  Retrieve metadata from agents as a list of sources
-    df_source_list = read_source_file()
+    df_source_list = read_source_file(xsr_config)
 
     # Iterate through the list of sources and extract metadata
     for source_item in df_source_list:
         logger.info('Loading metadata to be extracted from source')
 
         # Changing null values to None for source dataframe
-        std_source_df = source_item.where(pd.notnull(source_item),
-                                          None)
+        std_source_df = source_item.replace(np.nan, None)
         if std_source_df.empty:
             logger.error("Source metadata is empty!")
-        extract_metadata_using_key(std_source_df)
+        extract_metadata_using_key(xsr_config,
+                                   xia_config, std_source_df)
 
 
-def add_publisher_to_source(source_df):
+def add_publisher_to_source(xia, source_df):
     """Add publisher column to source metadata and return source metadata"""
 
     # Get publisher name from system operator
-    publisher = get_publisher_detail()
+    publisher = get_publisher_detail(xia)
     if not publisher:
         logger.warning("Publisher field is empty!")
     # Assign publisher column to source data
@@ -60,21 +61,25 @@ def store_source_metadata(key_value, key_value_hash, hash_value, metadata):
         record_lifecycle_status='Active').exclude(
         source_metadata_hash=hash_value).update(
         record_lifecycle_status='Inactive')
-
     # Retrieving existing records or creating new record to MetadataLedger
-    MetadataLedger.objects.get_or_create(
-        source_metadata_key=key_value,
+    # Retrieving existing records or creating new record to MetadataLedger
+    obj, created = MetadataLedger.objects.get_or_create(
         source_metadata_key_hash=key_value_hash,
-        source_metadata=metadata,
         source_metadata_hash=hash_value,
-        record_lifecycle_status='Active')
+        record_lifecycle_status='Active',
+        defaults={'source_metadata_key': key_value,
+                  'source_metadata': metadata
+                  },)
+    if created:
+        logger.info(f"MetadataLedger record created for key: {obj}")
 
 
-def extract_metadata_using_key(source_df):
+def extract_metadata_using_key(xsr, xia, source_df):
     """Creating key, hash of key & hash of metadata """
     # Convert source data to dictionary and add publisher to metadata
-    source_df = add_publisher_to_source(source_df)
-    source_data_dict = source_df.to_dict(orient='index')
+    source_df = add_publisher_to_source(xia, source_df)
+    source_remove_nan_df = source_df.replace(np.nan, '', regex=True)
+    source_data_dict = source_remove_nan_df.to_dict(orient='index')
 
     logger.info('Setting record_status & deleted_date for updated record')
     logger.info('Getting existing records or creating new record to '
@@ -82,7 +87,7 @@ def extract_metadata_using_key(source_df):
     for temp_key, temp_val in source_data_dict.items():
         # key dictionary creation function called
         key = \
-            get_source_metadata_key_value(source_data_dict[temp_key])
+            get_source_metadata_key_value(xsr, source_data_dict[temp_key])
 
         # Call store function with key, hash of key, hash of metadata,
         # metadata
@@ -104,10 +109,42 @@ class Command(BaseCommand):
     """Django command to extract data from Experience Source Repository (
     XSR) """
 
+    help = 'Extract source metadata'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--config_id', type=int, help='ID of the config')
+
     def handle(self, *args, **options):
         """
             Metadata is extracted from XSR and stored in Metadata Ledger
         """
-        get_source_metadata()
+        logger.info('Extracting metadata from XSR')
+        # Call function to get source metadata
+        xsr = None
+        xia = None
+
+        if 'config' in options:
+            xsr = options['config'].xsr_configuration
+            xia = options['config'].xia_configuration
+            logger.info(xia)
+        elif 'config_id' in options:
+            config_id = options['config_id']
+            try:
+                xsr = (ConfigurationManager.objects.get(
+                    id=config_id)).xsr_configuration
+                xia = (ConfigurationManager.objects.get(
+                    id=config_id)).xia_configuration
+            except ConfigurationManager.DoesNotExist:
+                logger.error(
+                    f'XIA Configuration with ID {options["config_id"]} '
+                    'does not exist')
+                return
+        if not xia:
+            xia = None
+            logger.error('XIA Configuration is not provided')
+        if not xsr:
+            xsr = None
+            logger.error('XSR Configuration is not provided')
+        get_source_metadata(xsr, xia)
 
         logger.info('MetadataLedger updated with extracted data from XSR')

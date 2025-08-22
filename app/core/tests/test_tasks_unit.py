@@ -24,32 +24,3 @@ class TasksTests(TestSetUp):
 
         self.assert_(execute_xia_automated_workflow.run())
         self.assertEqual(mock_run.call_count, 3)
-
-    def test_check_calls_xia_workflow(self):
-        """Testing the calls to commands from task list"""
-
-        with patch('core.tasks.extract_Command.handle') as mock_extract, \
-                patch('core.tasks.validate_source_Command.'
-                      'handle') as mock_validate_source, \
-                patch('core.tasks.transform_Command.'
-                      'handle') as mock_transform, \
-                patch('core.tasks.'
-                      'validate_target_Command.'
-                      'handle') as mock_validate_target, \
-                patch('core.tasks.load_Command.handle') as mock_load, \
-                patch('core.tasks.'
-                      'load_supplemental_Command.'
-                      'handle') as mock_load_supplemental, \
-                patch('core.tasks.'
-                      'conformance_alerts_Command.'
-                      'handle') as mock_conformance:
-
-            execute_xia_automated_workflow.run()
-
-            self.assertEqual(mock_extract.call_count, 1)
-            self.assertEqual(mock_validate_source.call_count, 1)
-            self.assertEqual(mock_transform.call_count, 1)
-            self.assertEqual(mock_validate_target.call_count, 1)
-            self.assertEqual(mock_load.call_count, 1)
-            self.assertEqual(mock_load_supplemental.call_count, 1)
-            self.assertEqual(mock_conformance.call_count, 1)

@@ -1,6 +1,8 @@
 import pandas as pd
 from django.test import TestCase
 
+from core.models import XSRConfiguration
+
 
 class TestSetUp(TestCase):
     """Class with setup and teardown for tests in XIS"""
@@ -39,8 +41,23 @@ class TestSetUp(TestCase):
             "key1": ["val1"],
             "key2": ["val2"],
             "key3": ["val3"]}
+
+        self.test_courses_url = \
+            'https://api.coursera.com/ent/api/businesses.v1/123/contents'
+
+        self.orgId = '123'
+
         self.metadata_df = pd.DataFrame.from_dict({1: self.source_metadata},
                                                   orient='index')
+
+        self.xsr_config_obj = XSRConfiguration.objects.create(
+            token_url="123",
+            xsr_api_pk="123",
+            xsr_api_sk="456",
+            xsr_api_org_id="789",
+            courses_url=self.test_courses_url,
+            key_fields='["id", "SOURCESYSTEM"]'
+        )
 
         return super().setUp()
 
