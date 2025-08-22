@@ -63,8 +63,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-SECURE_SSL_REDIRECT = True
-SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
+# SECURE_SSL_REDIRECT = True
+# SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
 
 ROOT_URLCONF = 'openlxp_xia_coursera_project.urls'
 
