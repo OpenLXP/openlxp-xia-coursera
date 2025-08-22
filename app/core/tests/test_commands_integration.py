@@ -49,11 +49,13 @@ class CommandIntegration(TestSetUp):
         Metadata_ledger table """
 
         data = {1: self.source_metadata}
+        xia = self.xia_config
         input_data = pd.DataFrame.from_dict(data, orient='index')
         with patch('core.management.commands.extract_source_metadata'
                    '.add_publisher_to_source',
                    return_value=input_data):
-            extract_metadata_using_key(input_data)
+            extract_metadata_using_key(self.xsr_config_obj,
+                                       xia, input_data)
             result_query = MetadataLedger.objects.values(
                 'source_metadata_key',
                 'source_metadata_key_hash',

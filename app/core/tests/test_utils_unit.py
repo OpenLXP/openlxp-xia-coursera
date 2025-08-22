@@ -103,6 +103,5 @@ class UtilsTests(TestSetUp):
                   '"programs": [{"contentUrl": "test"}]}],"paging": []}'
 
             mock_resp.get.return_value.text = val
-
             self.assertIsInstance(extract_source(
                 self.xsr_config_obj), pd.DataFrame)

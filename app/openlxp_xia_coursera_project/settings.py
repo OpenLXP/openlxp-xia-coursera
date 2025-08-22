@@ -25,11 +25,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY_VAL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 mimetypes.add_type("text/css", ".css", True)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('HOSTS').split(';')
+
+# Content Security Policy (CSP)
+SELF_VALUE = "'self'"  # defining a constant
+IMG_DATA_VALUE = "data:"
+
+CSP_DEFAULT_SRC = (SELF_VALUE)
+CSP_SCRIPT_SRC = (SELF_VALUE,)
+CSP_IMG_SRC = (SELF_VALUE, IMG_DATA_VALUE)
+CSP_STYLE_SRC = (SELF_VALUE)
+CSP_FRAME_SRC = (SELF_VALUE,)
+CSP_FONT_SRC = (SELF_VALUE,)
 
 # Application definition
 
@@ -61,10 +72,23 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 # SECURE_SSL_REDIRECT = True
 # SECURE_REDIRECT_EXEMPT = ['health/', 'api/health/']
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_BROWSER_XSS_FILTER = True
+
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = True
+if os.environ.get('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(';')
+else:
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
 
 ROOT_URLCONF = 'openlxp_xia_coursera_project.urls'
 
@@ -98,9 +122,9 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PORT': 3306,
         'OPTIONS': {
-                    'charset': 'utf8mb4',
-                }
-            },
+            'charset': 'utf8mb4',
+        }
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

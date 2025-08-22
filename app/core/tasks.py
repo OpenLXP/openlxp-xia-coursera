@@ -15,8 +15,6 @@ from openlxp_xia.management.commands.validate_source_metadata import \
 from openlxp_xia.management.commands.validate_target_metadata import \
     Command as validate_target_Command
 
-from core.management.commands.extract_source_metadata import \
-    Command as extract_Command
 
 logger = logging.getLogger('dict_config_logger')
 

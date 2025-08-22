@@ -131,7 +131,6 @@ def extract_source(xsr_config=None):
         xsr_config = XSRConfiguration.objects.first()
     else:
         xsr_config = xsr_config
-
     token = token_generation_for_api_endpoint(xsr_config)
     url = get_course_api_url(xsr_config)
 

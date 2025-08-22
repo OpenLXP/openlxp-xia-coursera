@@ -25,6 +25,7 @@ class TasksTests(TestSetUp):
         self.assert_(execute_xia_automated_workflow.run())
         self.assertEqual(mock_run.call_count, 3)
 
+
 #     def test_check_calls_xia_workflow(self):
 #         """Testing the calls to commands from task list"""
 
