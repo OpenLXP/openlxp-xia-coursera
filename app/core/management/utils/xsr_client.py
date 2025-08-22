@@ -129,8 +129,6 @@ def read_source_file(xsr_config):
     # Function call to extract data from source repository
     source_df = extract_source(xsr_config)
 
-    source_df.to_excel('source_data.xlsx')
-
     #  Creating list of dataframes of sources
     source_list = [source_df]
 
