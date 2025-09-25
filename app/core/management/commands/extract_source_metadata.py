@@ -2,16 +2,16 @@ import hashlib
 import json
 import logging
 
-from core.models import ConfigurationManager
 import numpy as np
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from openlxp_xia.management.utils.xia_internal import (
     convert_date_to_isoformat, get_publisher_detail)
-from openlxp_xia.models import MetadataLedger
+from openlxp_xia.models import MetadataLedger, XIAConfiguration
 
 from core.management.utils.xsr_client import (get_source_metadata_key_value,
                                               read_source_file)
+from core.models import ConfigurationManager, XSRConfiguration
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -126,7 +126,6 @@ class Command(BaseCommand):
         if 'config' in options:
             xsr = options['config'].xsr_configuration
             xia = options['config'].xia_configuration
-            logger.info(xia)
         elif 'config_id' in options:
             config_id = options['config_id']
             try:
@@ -140,11 +139,15 @@ class Command(BaseCommand):
                     'does not exist')
                 return
         if not xia:
-            xia = None
-            logger.error('XIA Configuration is not provided')
+            xia = XIAConfiguration.objects.first()
+            if not xia:
+                logger.error('XIA Configuration is not set.')
+                raise SystemError('XIA Configuration is not set.')
         if not xsr:
-            xsr = None
-            logger.error('XSR Configuration is not provided')
+            xsr = XSRConfiguration.objects.first()
+            if not xsr:
+                logger.error('XSR Configuration is not set.')
+                raise SystemError('XSR Configuration is not set.')
         get_source_metadata(xsr, xia)
 
         logger.info('MetadataLedger updated with extracted data from XSR')

@@ -12,6 +12,13 @@ from core.models import XSRConfiguration
 
 logger = logging.getLogger('dict_config_logger')
 
+adl_xapi_url = "http://adlnet.gov/expapi/verbs/"
+host_project = "https://xapi.edlm/profiles/edlm-coursera" \
+    "/concepts/activity-types/program"
+object_type_uri = "https://w3id.org/xapi/cmi5/activitytype/course"
+object_type = "Activity"
+platform = "EDLM Coursera Integration - [Environment]"
+
 
 def get_course_api_url(xsr_config=None):
     """"Retrieve course url api from XIS configuration"""
@@ -82,7 +89,48 @@ def coursera_courses_metadata_update(source_df_final):
     return source_df_final
 
 
+def replace_coursera_learner_metadata(source_df_final):
+
+    if 'email' in source_df_final.columns:
+        source_df_final['email'] = "mailto:" + \
+            source_df_final['email'].astype(str)
+
+    if 'contentId' in source_df_final.columns:
+        source_df_final['contentId'] = host_project + \
+            "/courses/" + source_df_final['contentId'].astype(str)
+
+        source_df_final["type"] = object_type_uri
+        source_df_final["contextType"] = host_project
+        source_df_final["objectType"] = object_type
+        source_df_final["platform"] = platform
+        source_df_final["programId"] = host_project + \
+            "/courses/" + source_df_final['programId'].astype(str)
+        source_df_final["programName"] = host_project + \
+            "/courses/" + source_df_final['programName'].astype(str)
+        source_df_final["verbStatus"] = None
+        source_df_final["verbStatusURI"] = None
+
+    if 'isCompleted' in source_df_final.columns:
+        for index, row in source_df_final.iterrows():
+            if row['isCompleted'] is True:
+                source_df_final.loc[index, 'verbStatus'] = 'Completed'
+            elif (row['isCompleted'] is False and
+                    row['overallProgress'] > 0):
+                source_df_final.loc[index, 'verbStatus'] = 'Progressed'
+            else:
+                source_df_final.loc[index, 'verbStatus'] = 'Registered'
+            if source_df_final.loc[index, 'verbStatus'] is not None:
+                source_df_final.loc[index, 'verbStatusURI'] = adl_xapi_url + \
+                    source_df_final.loc[index, 'verbStatus'].lower()
+    return source_df_final
+
+
 def extract_source(xsr_config=None):
+
+    if not xsr_config:
+        xsr_config = XSRConfiguration.objects.first()
+    else:
+        xsr_config = xsr_config
     token = token_generation_for_api_endpoint(xsr_config)
     url = get_course_api_url(xsr_config)
 
@@ -101,25 +149,46 @@ def extract_source(xsr_config=None):
         source_df = pd.DataFrame(source_data_dict['elements'])
         source_df = source_df.replace({np.nan: None})
         source_df_list.append(source_df)
-        if 'next' not in source_data_dict['paging']:
-            source_df_final = pd.concat(source_df_list).reset_index(drop=True)
+        # if 'next' not in source_data_dict['paging']:
+        #     source_df_final = pd.concat(source_df_list).
+        # reset_index(drop=True)
 
-            if xsr_config.data_type == "course":
-                source_df_final = coursera_courses_metadata_update(
-                    source_df_final)
+        #     if xsr_config.data_type == "course":
+        #         source_df_final = coursera_courses_metadata_update(
+        #             source_df_final)
+        #     elif xsr_config.data_type == "learner":
+        #         source_df_final = replace_coursera_learner_metadata(
+        #             source_df_final)
 
-            logger.info("Completed retrieving data from source")
-            return source_df_final
-        else:
-            logger.info("Retrieving data starting from index "
-                        + source_data_dict['paging']['next'])
-            data = {'start': source_data_dict['paging']['next'],
-                    'limit': '1000'}
-            resp = requests.get(url=url,
-                                headers=header,
-                                params=data,
-                                verify=False)
-            source_data_dict = json.loads(resp.text)
+        #     logger.info("Completed retrieving data from source")
+        #     return source_df_final
+        # else:
+        logger.info("Retrieving data starting from index "
+                    + str(source_data_dict['paging']['next']))
+        data = {'start': source_data_dict['paging']['next'],
+                'limit': '1000'}
+        resp = requests.get(url=url,
+                            headers=header,
+                            params=data,
+                            verify=False)
+        source_data_dict = json.loads(resp.text)
+
+        # temp
+
+        source_df = pd.DataFrame(source_data_dict['elements'])
+        source_df = source_df.replace({np.nan: None})
+        source_df_list.append(source_df)
+        source_df_final = pd.concat(source_df_list).reset_index(drop=True)
+
+        if xsr_config.data_type == "course":
+            source_df_final = coursera_courses_metadata_update(
+                source_df_final)
+        elif xsr_config.data_type == "learner":
+            source_df_final = replace_coursera_learner_metadata(
+                source_df_final)
+
+        logger.info("Completed retrieving data from source")
+        return source_df_final
 
 
 def read_source_file(xsr_config):

@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import XSRConfiguration, ConfigurationManager
+from .models import (XSRConfiguration,
+                     ConfigurationManager)
 
 # Register your models here.
 
@@ -13,10 +14,15 @@ class XSRConfigurationAdmin(admin.ModelAdmin):
               'xsr_api_org_id', 'courses_url', 'key_fields',
               'data_type']
 
+
 @admin.register(ConfigurationManager)
 class ConfigurationManagerAdmin(admin.ModelAdmin):
-    list_display = ('xsr_configuration', 'xia_configuration', 'xis_configuration', 'is_active')
+    list_display = ('xsr_configuration', 'xia_configuration',
+                    'xis_configuration', 'is_active')
     list_filter = ('is_active',)
-    fields = ['xsr_configuration', 'xia_configuration', 'xis_configuration', 'is_active']
-# This code registers the XSRConfiguration and ConfigurationManager models with the Django admin site.
-# It allows administrators to manage these configurations through the admin interface.
+    fields = ['xsr_configuration', 'xia_configuration',
+              'xis_configuration', 'is_active']
+# This code registers the XSRConfiguration and
+# ConfigurationManager models with the Django admin site.
+# It allows administrators to manage these configurations
+# through the admin interface.

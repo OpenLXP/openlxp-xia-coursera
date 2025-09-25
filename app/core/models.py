@@ -1,7 +1,6 @@
 import logging
 
 from django.db import models
-
 from openlxp_xia.models import XIAConfiguration, XISConfiguration
 
 logger = logging.getLogger('dict_config_logger')

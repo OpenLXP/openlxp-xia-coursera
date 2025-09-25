@@ -16,5 +16,4 @@ else
     (cd openlxp-xia-coursera; install -d -o www-data -p tmp/source) 
 fi 
 pwd 
-service clamav-daemon restart 
 ./start-server.sh 
