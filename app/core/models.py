@@ -1,14 +1,7 @@
 import logging
-import os
-import secrets
-import string
 
-import clamd
-import magic
 from django.db import models
-from django.forms import ValidationError
-
-from openlxp_xia_coursera_project import settings
+from openlxp_xia.models import XIAConfiguration, XISConfiguration
 
 logger = logging.getLogger('dict_config_logger')
 
@@ -16,56 +9,69 @@ logger = logging.getLogger('dict_config_logger')
 class XSRConfiguration(models.Model):
     """Model for XSR Configuration """
 
-    source_file = models.FileField(blank=True, null=True, upload_to='source/',
-                                   help_text='Upload the excel source '
-                                             'file')
+    DATA_TYPE_CHOICES = [
+        ('course', 'Course Data'),
+        ('competency', 'Competency Data'),
+        ('learner', 'Learner Data'),
+    ]
 
-    def filename(self):
-        return os.path.basename(self.source_file.name)
+    token_url = models.CharField(
+        help_text="Enter the token URL for Coursera", max_length=200
+    )
+    xsr_api_pk = models.CharField(
+        help_text='Enter the Coursera Primary Key', max_length=200
+    )
+    xsr_api_sk = models.CharField(
+        help_text='Enter the Coursera Secret Key', max_length=200
+    )
+    xsr_api_org_id = models.CharField(
+        help_text='Enter the Coursera Organization ID', max_length=200
+    )
+    courses_url = models.CharField(
+        help_text='Enter the URL to retrieve Coursera courses', max_length=200
+    )
+    key_fields = models.TextField(default='["Course_ID",'
+                                  '"CourseProviderName"]',
+                                  help_text='Enter list of field names '
+                                  'to create metadata key',
+                                  blank=True, null=True)
 
-    def clean(self):
-        if self.source_file:
-            # scan file for malicious payloads
-            cd = clamd.ClamdUnixSocket()
-            extracted_file = self.source_file
-            scan_results = cd.instream(extracted_file)['stream']
-            if 'OK' not in scan_results:
-                for issue_type, issue in [scan_results, ]:
-                    self.source_file = None
-                    logger.error(
-                        f'{issue_type} {issue}')
-                    raise ValidationError('File content is dangerous.')
-            else:
-                extracted_file.seek(0)
+    data_type = models.CharField(
+        max_length=20,
+        choices=DATA_TYPE_CHOICES,
+        default='course',
+        help_text='Select the type of data for this configuration'
+    )
 
-                # generate random file name
-                alphabet = string.ascii_letters + string.digits
-                tmp_dir = settings.TMP_SOURCE_DIR
-                random_name = ''.join(secrets.choice(alphabet)
-                                      for _ in range(8))
-                full_path = tmp_dir + random_name
 
-                extracted_file.open('rb')
+class ConfigurationManager(models.Model):
+    """Manager for XIA Configuration Model"""
 
-                # write to file and use magic to check file type
-                with open(full_path, 'wb') as local_file:
-                    local_file.write(extracted_file.read())
-                    local_file.flush()
-                    mime_type = magic.from_file(full_path, mime=True)
-
-                # delete file
-                os.remove(full_path)
-                # log issue if file isn't CSV
-                if 'spreadsheet' not in mime_type.lower():
-                    self.source_file = None
-                    logger.error('Invalid file type detected. Expected CSV, '
-                                 'found %s', mime_type)
-                    raise ValidationError('Invalid file type detected. '
-                                          'Expected spreadsheet.')
-
-    def save(self, *args, **kwargs):
-        if not self.pk and XSRConfiguration.objects.exists():
-            raise ValidationError('There can be only one XISConfiguration '
-                                  'instance')
-        if self.source_file:
-            return super(XSRConfiguration, self).save(*args, **kwargs)
+    xsr_configuration = models.ForeignKey(
+        'XSRConfiguration',
+        on_delete=models.CASCADE,
+        related_name='xsr_configuration',
+        null=True,
+        blank=True,
+        help_text='Reference to the XSR Configuration'
+    )
+    xia_configuration = models.ForeignKey(
+        XIAConfiguration,
+        on_delete=models.CASCADE,
+        related_name='xia_configuration',
+        null=True,
+        blank=True,
+        help_text='Reference to the XIA Configuration'
+    )
+    xis_configuration = models.ForeignKey(
+        XISConfiguration,
+        on_delete=models.CASCADE,
+        related_name='xis_configuration',
+        null=True,
+        blank=True,
+        help_text='Reference to the XIS Configuration'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Designates whether this configuration is active.'
+    )

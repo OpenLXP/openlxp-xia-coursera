@@ -24,7 +24,7 @@ class WorkflowView(APIView):
         return Response(response_val, status=status.HTTP_202_ACCEPTED)
 
 
-def get_status(request, task_id):
+def get_status(task_id):
     task_result = AsyncResult(task_id)
     result = {
         "task_id": task_id,
