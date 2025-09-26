@@ -7,8 +7,10 @@ from ddt import data, ddt, unpack
 from django.test import tag
 
 from core.management.utils.xsr_client import (
-    extract_source, get_course_api_url, get_source_metadata_key_value,
-    read_source_file, token_generation_for_api_endpoint)
+    coursera_courses_metadata_update, extract_source, get_course_api_url,
+    get_source_metadata_key_value,
+    read_source_file, replace_coursera_learner_metadata,
+    token_generation_for_api_endpoint)
 from core.models import XSRConfiguration
 
 from .test_setup import TestSetUp
@@ -106,3 +108,64 @@ class UtilsTests(TestSetUp):
             mock_resp.get.return_value.text = val
             self.assertIsInstance(extract_source(
                 self.xsr_config_obj), pd.DataFrame)
+
+    def test_coursera_courses_metadata_update(self):
+        """Test coursera_courses_metadata_update function"""
+        data = {
+            'instructors': [
+                [{'name': 'Alice'}, {'name': 'Bob'}],
+                [{'name': 'Charlie'}]
+            ],
+            'partners': [
+                [{'name': 'Partner1'}, {'name': 'Partner2'}],
+                [{'name': 'Partner3'}]
+            ],
+            'programs': [
+                [{'contentUrl': 'http://example.com/program1'}],
+                [{'contentUrl': 'http://example.com/program2'}]
+            ]
+        }
+        df = pd.DataFrame(data)
+        updated_df = coursera_courses_metadata_update(df.copy())
+
+        self.assertEqual(updated_df['instructors'][0], ['Alice', 'Bob'])
+        self.assertEqual(updated_df['instructors'][1], ['Charlie'])
+        self.assertEqual(updated_df['partners'][0], ['Partner1', 'Partner2'])
+        self.assertEqual(updated_df['partners'][1], ['Partner3'])
+        # If your function extracts only the first URL, adjust as needed
+        self.assertEqual(updated_df['programs'][0],
+                         'http://example.com/program1')
+        self.assertEqual(updated_df['programs'][1],
+                         'http://example.com/program2')
+
+    def test_replace_coursera_learner_metadata(self):
+        """Test replace_coursera_learner_metadata function"""
+
+        data = {
+            'email': ['user1@example.com', 'user2@example.com'],
+            'contentId': ['123', '456'],
+            'programId': ['789', '012'],
+            'programName': ['ProgramA', 'ProgramB'],
+            'isCompleted': [True, False],
+            'overallProgress': [1, 0]
+        }
+        df = pd.DataFrame(data)
+        updated_df = replace_coursera_learner_metadata(df.copy())
+
+        # Check email formatting
+        self.assertEqual(updated_df['email'][0], 'mailto:user1@example.com')
+        self.assertEqual(updated_df['email'][1], 'mailto:user2@example.com')
+
+        # Check contentId, programId, programName formatting
+        host_project = \
+            "https://xapi.edlm/profiles/edlm-coursera/concepts/" \
+            "activity-types/program"
+        self.assertTrue(updated_df['contentId'][0].startswith(host_project))
+        self.assertTrue(updated_df['programId'][0].startswith(host_project))
+        self.assertTrue(updated_df['programName'][0].startswith(host_project))
+
+        # Check verbStatus and verbStatusURI
+        self.assertEqual(updated_df['verbStatus'][0], 'Completed')
+        self.assertEqual(updated_df['verbStatus'][1], 'Registered')
+        self.assertTrue(updated_df['verbStatusURI'][0].endswith('/completed'))
+        self.assertTrue(updated_df['verbStatusURI'][1].endswith('/registered'))
